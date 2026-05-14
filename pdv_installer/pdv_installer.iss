@@ -1,8 +1,11 @@
 ; ============================================================
-; Inno Setup Script - Instalador PDV Supermercado
+; Inno Setup Script - Instalador UNIFICADO PDV Supermercado
+; Detecta automaticamente Windows 32 ou 64 bits e instala a
+; versao correta do executavel. UM UNICO arquivo .exe para
+; distribuir ao cliente.
 ; ============================================================
-; Compila com: Inno Setup Compiler (https://jrsoftware.org/isinfo.php)
-; Resultado: setup_PDV_Supermercado_v1.0.0.exe
+; Compila com: Inno Setup Compiler 6 (https://jrsoftware.org/isinfo.php)
+; Saida: output\setup_PDV_Supermercado_v1.0.0.exe (~25-50 MB)
 ; Suporta: Windows 7, 8, 10, 11 (32 e 64 bits)
 ; ============================================================
 
@@ -23,16 +26,11 @@ AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}
 AppUpdatesURL={#AppURL}
 
-; Pasta padrão de instalação: C:\Program Files (x86)\PDV Supermercado em 64-bit
-; ou C:\Program Files\PDV Supermercado em 32-bit
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
-
-; Permite ao usuário escolher pasta
 DisableProgramGroupPage=no
 AllowNoIcons=yes
 
-; Saída
 OutputDir=output
 OutputBaseFilename=setup_PDV_Supermercado_v{#AppVersion}
 SetupIconFile=icone.ico
@@ -40,25 +38,13 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 
-; Suporte 32 e 64 bits
+; Suporta 32 e 64 bits (instala a versao adequada)
 ArchitecturesAllowed=x86 x64
 ArchitecturesInstallIn64BitMode=x64
 
-; Privilégios admin para instalar em Program Files
 PrivilegesRequired=admin
-
-; Imagens do wizard (opcional, coloque na mesma pasta)
-; WizardImageFile=installer-side.bmp
-; WizardSmallImageFile=installer-icon.bmp
-
-; Idiomas
-ShowLanguageDialog=no
-LanguageDetectionMethod=locale
-
-; Versão mínima do Windows: 7
 MinVersion=6.1
 
-; Desinstalador
 UninstallDisplayIcon={app}\{#AppExeName}
 UninstallDisplayName={#AppName}
 
@@ -68,59 +54,43 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1
 
 [Files]
-; Executável principal (gerado pelo PyInstaller)
-Source: "dist\PDV_Supermercado.exe"; DestDir: "{app}"; Flags: ignoreversion
+; -------- INSTALACAO 64-BIT --------
+; So instala em Windows 64-bit (Check: Is64BitInstallMode)
+Source: "dist\PDV_Supermercado_x64.exe"; DestDir: "{app}"; DestName: "{#AppExeName}"; Flags: ignoreversion; Check: Is64BitInstallMode
 
-; Ícone para atalhos
+; -------- INSTALACAO 32-BIT --------
+; So instala em Windows 32-bit (Check: not Is64BitInstallMode)
+Source: "dist\PDV_Supermercado_x86.exe"; DestDir: "{app}"; DestName: "{#AppExeName}"; Flags: ignoreversion; Check: not Is64BitInstallMode
+
+; -------- ARQUIVOS COMUNS --------
 Source: "icone.ico"; DestDir: "{app}"; Flags: ignoreversion
-
-; Documentação (opcional)
 Source: "README.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
 
-; Pasta de dados inicial (banco SQLite vazio será criado no primeiro uso)
-; Se você quiser distribuir um banco pré-populado:
-; Source: "data\pdv.db"; DestDir: "{commonappdata}\{#AppName}"; Flags: onlyifdoesntexist uninsneveruninstall
-
 [Dirs]
-; Cria a pasta de dados em C:\ProgramData\PDV Supermercado (acessível por todos os usuários)
+; Pasta de dados (compartilhada entre usuarios)
 Name: "{commonappdata}\{#AppName}"; Permissions: users-modify
 Name: "{commonappdata}\{#AppName}\backups"; Permissions: users-modify
-Name: "{commonappdata}\{#AppName}\logs"; Permissions: users-modify
+Name: "{commonappdata}\{#AppName}\qrcodes"; Permissions: users-modify
+Name: "{commonappdata}\{#AppName}\etiquetas"; Permissions: users-modify
 
 [Icons]
-; Atalho no menu iniciar
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\icone.ico"
 Name: "{group}\Manual do Usuário"; Filename: "{app}\README.txt"
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
-
-; Atalho na área de trabalho (se marcado)
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\icone.ico"; Tasks: desktopicon
 
-; Atalho na barra de inicialização rápida (Windows antigos)
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#AppName}"; Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\icone.ico"; Tasks: quicklaunchicon
-
 [Run]
-; Pergunta se quer abrir após instalar
 Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(AppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
-[UninstallDelete]
-; Ao desinstalar, mantém os dados do usuário por padrão
-; Se quiser apagar TUDO ao desinstalar, descomente as linhas abaixo:
-; Type: filesandordirs; Name: "{commonappdata}\{#AppName}"
-
 [Code]
-// ============================================================
-// Verifica se o PDV já está rodando antes de instalar/atualizar
-// ============================================================
 function InitializeSetup(): Boolean;
 var
   ResultCode: Integer;
 begin
   Result := True;
-  // Mata processo se estiver aberto (atualização)
+  // Fecha o PDV se estiver aberto (atualizacao)
   Exec('taskkill.exe', '/F /IM PDV_Supermercado.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
 
@@ -132,9 +102,6 @@ begin
   Exec('taskkill.exe', '/F /IM PDV_Supermercado.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
 
-// ============================================================
-// Pergunta se quer manter os dados ao desinstalar
-// ============================================================
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   DataDir: String;
@@ -145,7 +112,7 @@ begin
     DataDir := ExpandConstant('{commonappdata}\{#AppName}');
     if DirExists(DataDir) then
     begin
-      Response := MsgBox('Deseja remover também o banco de dados e backups do PDV?' + #13#10 + #13#10 +
+      Response := MsgBox('Deseja remover também o banco de dados, backups e arquivos do PDV?' + #13#10 + #13#10 +
                         'Pasta: ' + DataDir + #13#10 + #13#10 +
                         'Clique SIM para apagar TUDO ou NÃO para preservar os dados.',
                         mbConfirmation, MB_YESNO or MB_DEFBUTTON2);

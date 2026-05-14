@@ -1,143 +1,152 @@
-# 📦 PDV Supermercado — Gerar Instalador Profissional para Windows
+# 📦 PDV Supermercado — Build Multi-Arquitetura (32 + 64 bits)
 
-Este guia te leva passo a passo para transformar o `pdv_supermercado.py` em um instalador `.exe` profissional para Windows 10/11 (32 e 64 bits), sem dependência de Python no PC do cliente.
-
----
-
-## ✅ Pré-requisitos (instale uma única vez no seu PC de desenvolvimento)
-
-### 1. Python 3.10+ (64 bits — para gerar exe 64-bit)
-- Baixe em: https://www.python.org/downloads/
-- ⚠️ **MARQUE** a opção "Add Python to PATH" durante a instalação
-
-### 2. Inno Setup (gratuito)
-- Baixe em: https://jrsoftware.org/isinfo.php
-- Instale a versão "Stable" (Inno Setup 6 ou superior)
-
-### 3. (Opcional) Python 3.10 32-bit
-- Apenas se você precisa de instalador para Windows 32-bit
-- Baixe a versão "Windows installer (32-bit)" no python.org
-- Instale em pasta separada (ex: `C:\Python310-32\`)
+Guia para gerar **UM ÚNICO instalador** que funciona tanto em Windows 32-bit quanto 64-bit (detecta automaticamente).
 
 ---
 
-## 🚀 Passo a passo — Build 64-bit (padrão)
+## ✅ Pré-requisitos
 
-### Etapa 1 — Preparar a pasta
-1. Crie uma pasta no PC: `C:\Build_PDV\`
-2. Copie para dentro dela:
-   - `pdv_supermercado.py` (seu código)
-   - `pdv_supermercado.spec` (deste pacote)
-   - `version_info.txt` (deste pacote)
-   - `pdv_installer.iss` (deste pacote)
-   - `icone.ico` — **crie ou baixe um ícone 256x256** (pode usar https://convertio.co/png-ico para converter PNG)
-   - `README.txt` — copie o conteúdo deste arquivo ou crie um manual do usuário
+| Item | Versão | Onde baixar |
+|------|--------|-------------|
+| Python 64-bit | 3.12 | https://python.org → **MARQUE "Add to PATH"** |
+| Python 32-bit | 3.9.13 | https://python.org → versão "Windows installer (32-bit)" |
+| Inno Setup | 6 | https://jrsoftware.org/isinfo.php |
 
-### Etapa 2 — Instalar dependências Python
-Abra o **Prompt de Comando (cmd)** dentro da pasta `C:\Build_PDV\` e rode:
+### Instalação recomendada
+- Python 3.12 (64-bit): instalar normalmente, **com PATH**
+- Python 3.9.13 (32-bit): instalar em pasta separada, por exemplo `C:\Python39-32\`, **sem adicionar ao PATH** (para não conflitar)
+
+---
+
+## 🚀 Build automatizado (recomendado)
+
+### Etapa 1 — Prepare a pasta
+1. Crie `C:\Build_PDV\`
+2. Copie TODOS os arquivos do pacote pra dentro
+3. Adicione um arquivo `icone.ico` (256x256) — converter PNG: https://convertio.co/png-ico
+
+### Etapa 2 — Ajuste o build_32.bat (se necessário)
+Abra `build_32.bat` no Bloco de Notas e confirme a linha:
+```bat
+set PY32="C:\Python39-32\python.exe"
+```
+Se seu Python 3.9.13 32-bit estiver em **outro lugar**, ajuste essa linha. O script já tenta vários caminhos comuns automaticamente.
+
+### Etapa 3 — Execute o build completo
+Duplo clique em **`build_all.bat`** OU no cmd:
+```bash
+cd C:\Build_PDV
+build_all.bat
+```
+
+Em ~10 minutos você terá:
+- ✅ `dist\PDV_Supermercado_x64.exe` (executável Windows 64-bit)
+- ✅ `dist\PDV_Supermercado_x86.exe` (executável Windows 32-bit)
+- ✅ `output\setup_PDV_Supermercado_v1.0.0.exe` ← **instalador único pra distribuir**
+
+---
+
+## 🧪 Build de cada arquitetura separadamente
+
+Se preferir gerar uma por vez:
 
 ```bash
-pip install pyinstaller pillow qrcode[pil]
+build_64.bat   :: só 64-bit
+build_32.bat   :: só 32-bit
 ```
 
-### Etapa 3 — Gerar o executável (.exe)
-Na mesma pasta, no cmd:
+---
 
+## 🎯 Como o instalador único funciona
+
+Quando o cliente roda `setup_PDV_Supermercado_v1.0.0.exe`:
+
+1. Inno Setup detecta a arquitetura do Windows
+2. **Se Windows 64-bit**: extrai e instala `PDV_Supermercado_x64.exe`
+3. **Se Windows 32-bit**: extrai e instala `PDV_Supermercado_x86.exe`
+4. Em ambos os casos, o arquivo instalado se chama `PDV_Supermercado.exe`
+5. Atalhos no Menu Iniciar e Área de Trabalho apontam pra `PDV_Supermercado.exe`
+
+**Resultado**: o cliente nem percebe que existem duas versões — apenas o programa funciona perfeitamente no PC dele.
+
+---
+
+## 📊 Tamanhos esperados
+
+| Arquivo | Tamanho aprox. |
+|---------|----------------|
+| `PDV_Supermercado_x64.exe` | 25-35 MB |
+| `PDV_Supermercado_x86.exe` | 22-30 MB |
+| `setup_PDV_Supermercado_v1.0.0.exe` | 35-50 MB (LZMA2 ultra comprime os dois exes) |
+
+---
+
+## ⚠️ Avisos importantes
+
+### Pillow no Python 3.9 32-bit
+A versão mais recente do Pillow pode não ter wheels para Python 3.9 32-bit. Se der erro:
 ```bash
-pyinstaller pdv_supermercado.spec --clean
+C:\Python39-32\python.exe -m pip install "pillow<10.4" "qrcode[pil]"
 ```
 
-Aguarde 2-5 minutos. Resultado:
-- `C:\Build_PDV\dist\PDV_Supermercado.exe` ← **executável standalone, sem Python**
+### Antivírus pode bloquear o .exe
+PyInstaller gera arquivos que alguns antivírus detectam como falso positivo. Soluções:
+- Adicione a pasta `C:\Build_PDV\dist\` na exceção do antivírus
+- **Solução profissional**: assine digitalmente os .exe com certificado de assinatura de código (custo: ~R$300/ano via Certisign, Valid, etc.)
 
-### Etapa 4 — Teste o .exe
-Dê duplo clique em `dist\PDV_Supermercado.exe` para validar que abre normalmente. Teste o login, cadastros, etc.
-
-### Etapa 5 — Compilar o instalador com Inno Setup
-1. Abra o **Inno Setup Compiler** (atalho instalado no Menu Iniciar)
-2. Menu **File → Open** → selecione `C:\Build_PDV\pdv_installer.iss`
-3. Menu **Build → Compile** (ou aperte `F9`)
-4. Aguarde ~1 minuto. Resultado:
-   - `C:\Build_PDV\output\setup_PDV_Supermercado_v1.0.0.exe` ← **instalador profissional**
-
-### Etapa 6 — Distribuir
-- Envie o arquivo `setup_PDV_Supermercado_v1.0.0.exe` por:
-  - Pendrive
-  - Email (se < 25MB)
-  - Google Drive / WeTransfer
-  - Site da sua empresa
-- O cliente apenas executa, aceita os termos, escolhe a pasta e clica em **Instalar**
-- Atalho criado no **Menu Iniciar** e na **Área de Trabalho**
+### Tela "Aviso de Segurança do Windows SmartScreen"
+Como o instalador não tem assinatura digital ainda, o Windows pode mostrar uma tela azul ao abrir. O cliente clica em **"Mais informações"** → **"Executar assim mesmo"**. Solução definitiva: certificado de assinatura.
 
 ---
 
-## 🖥️ Build 32-bit (opcional — só se precisar)
-
-Se algum cliente ainda usa Windows 10 32-bit (raro em 2026):
-
-1. Instale **Python 3.10 32-bit** num caminho separado: `C:\Python310-32\`
-2. Crie outra pasta: `C:\Build_PDV_32\` e copie os mesmos arquivos
-3. Use o pip do Python 32-bit:
-   ```bash
-   C:\Python310-32\Scripts\pip.exe install pyinstaller pillow qrcode[pil]
-   C:\Python310-32\Scripts\pyinstaller.exe pdv_supermercado.spec --clean
-   ```
-4. Renomeie o resultado: `dist\PDV_Supermercado.exe` → `dist\PDV_Supermercado_32.exe`
-5. Edite `pdv_installer.iss` para apontar pro novo arquivo e mude `ArchitecturesAllowed=x86` e remova `x64`
-6. Compile no Inno Setup → vai gerar `setup_PDV_Supermercado_v1.0.0_32bits.exe`
-
----
-
-## 📁 Onde ficam os dados após instalado
-
-O instalador cria automaticamente esta estrutura:
-
-```
-C:\Program Files\PDV Supermercado\
-├── PDV_Supermercado.exe         ← executável
-├── icone.ico
-└── README.txt
-
-C:\ProgramData\PDV Supermercado\  ← dados do usuário (banco, backups, logs)
-├── pdv.db                        ← banco SQLite (criado no 1º uso)
-├── backups\
-└── logs\
-```
-
-> ⚠️ **Importante**: ajuste seu código Python para criar o banco em `%PROGRAMDATA%\PDV Supermercado\pdv.db` em vez da pasta do .exe. Caminho recomendado:
-> ```python
-> import os
-> DATA_DIR = os.path.join(os.environ.get('PROGRAMDATA', 'C:\\ProgramData'), 'PDV Supermercado')
-> os.makedirs(DATA_DIR, exist_ok=True)
-> DB_PATH = os.path.join(DATA_DIR, 'pdv.db')
-> ```
-
----
-
-## 🔄 Atualizar versão futura
+## 🔄 Atualização de versão futura
 
 Quando lançar v1.1.0:
-1. Mude `AppVersion "1.0.0"` → `"1.1.0"` em `pdv_installer.iss`
-2. Mude `filevers=(1, 0, 0, 0)` → `(1, 1, 0, 0)` em `version_info.txt`
-3. Recompile o .exe e o instalador
-4. O instalador atualiza automaticamente sobre a versão antiga, **mantendo o banco de dados** do cliente
+1. Edite `pdv_installer.iss` → mude `AppVersion "1.0.0"` para `"1.1.0"`
+2. Edite `version_info.txt` → mude `filevers=(1, 0, 0, 0)` para `(1, 1, 0, 0)`
+3. Rode `build_all.bat`
+4. Distribua o novo `setup_PDV_Supermercado_v1.1.0.exe`
 
-O script Inno Setup já mata o processo do PDV antes de atualizar e pergunta se quer remover o banco ao desinstalar.
+O instalador automaticamente:
+- ✅ Fecha o PDV se estiver aberto
+- ✅ Substitui o .exe pela nova versão
+- ✅ **Mantém o banco de dados** do cliente intacto
+- ✅ Mantém configurações e backups
 
 ---
 
-## ❓ Problemas comuns
+## 📁 Estrutura final no PC do cliente
+
+```
+C:\Program Files\PDV Supermercado\          (Program Files (x86)\... se 32-bit)
+├── PDV_Supermercado.exe       ← versão correta da arquitetura
+├── icone.ico
+├── README.txt
+└── unins000.exe               ← desinstalador
+
+C:\ProgramData\PDV Supermercado\            (dados do usuário)
+├── dados_pdv.db               ← banco SQLite
+├── backups\
+├── qrcodes\
+└── etiquetas\
+```
+
+---
+
+## 🆘 Problemas comuns
 
 | Erro | Solução |
 |------|---------|
-| `pyinstaller` não é reconhecido | Reinstale Python marcando "Add to PATH" |
-| `.exe` muito grande (>100MB) | Já incluímos `upx=True`. Baixe UPX e adicione ao PATH para comprimir mais |
-| Falha ao abrir Pillow/qrcode | Confirme `pip install pillow qrcode[pil]` no Python correto |
-| Antivírus bloqueia o .exe | Comum com PyInstaller. Assine digitalmente o .exe com certificado (custo: ~R$300/ano) |
-| Erro "msvcp140.dll missing" | Instale o **Microsoft Visual C++ Redistributable** no PC do cliente |
+| `'python' não é reconhecido como comando` | Reinstale Python 3.12 marcando "Add to PATH" |
+| `Nao encontrei o Python 3.9.13 32-bit` | Edite `build_32.bat`, ajuste a variável `PY32` |
+| `dist\PDV_Supermercado_x86.exe nao encontrado` | Build 32-bit falhou. Rode `build_32.bat` separado para ver o erro |
+| Erro de Pillow no Python 32-bit | `C:\Python39-32\python.exe -m pip install "pillow<10.4"` |
+| Inno Setup não compila | Confirme instalação em `C:\Program Files (x86)\Inno Setup 6\` |
+| `.exe` muito grande (>100MB) | Já incluímos `upx=True` no spec. Para comprimir mais, baixe UPX |
+| `msvcp140.dll missing` no cliente | Distribua Microsoft Visual C++ Redistributable junto |
 
 ---
 
 ## 📞 Suporte
 
-Em caso de dúvida no build, abra novamente o Emergent e descreva o erro exato (mensagem completa do cmd).
+Em caso de erro, copie a mensagem do cmd e abra novamente o Emergent para ajuda.
