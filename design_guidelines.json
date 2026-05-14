@@ -1,0 +1,133 @@
+{
+  "project_context": {
+    "domain": "Real Estate Management Mobile App (Expo React Native)",
+    "target_audience": "Brazilian Real Estate Brokers and Managers",
+    "theme": "Light",
+    "archetype": "Archetype 4 (Swiss & High-Contrast)",
+    "emotional_tone": "Authoritative, Efficient, Trustworthy, Professional"
+  },
+  "typography": {
+    "rules": {
+      "anti_default": "Banned: Inter, Roboto, Open Sans, Lato for Headings. Use custom fonts via expo-font.",
+      "hierarchy": "Strict hierarchy. Jump between heading and subtitle must not exceed 2 Tailwind steps.",
+      "typesetting": "Headlines use tracking-tight. Overlines/Labels use uppercase and tracking-[0.2em]. Line-height tight for headings, relaxed for body."
+    },
+    "font_family": {
+      "headings": "Cabinet Grotesk or Outfit",
+      "body": "IBM Plex Sans or Manrope",
+      "mono": "IBM Plex Mono (for financial numbers, IGPM/IPCA rates)"
+    },
+    "sizes": {
+      "h1_hero": "text-4xl sm:text-5xl",
+      "h2_section": "text-2xl sm:text-3xl",
+      "h3_card": "text-xl",
+      "body": "text-base",
+      "small_label": "text-sm",
+      "tiny_label": "text-xs uppercase tracking-widest"
+    }
+  },
+  "color_palette": {
+    "backgrounds": {
+      "primary": "#FFFFFF",
+      "secondary": "#F8FAFC",
+      "card": "#FFFFFF",
+      "modal_overlay": "rgba(10, 15, 28, 0.6)"
+    },
+    "text": {
+      "primary": "#0A0F1C",
+      "secondary": "#64748B",
+      "disabled": "#94A3B8"
+    },
+    "brand_accents": {
+      "primary": "#0052FF",
+      "primary_hover": "#0040CC",
+      "luxury_accent": "#B8860B", 
+      "success": "#059669",
+      "danger": "#DC2626",
+      "warning": "#D97706"
+    },
+    "borders": {
+      "light": "#E2E8F0",
+      "focus": "#0052FF"
+    },
+    "rules": {
+      "tinted_grey": "All greys are slightly tinted with blue (Slate). No pure #000000 or #808080.",
+      "contrast": "Ensure minimum 4.5:1 ratio for normal text. Use APCA standards.",
+      "no_gradients": "No generic full-screen gradients. Use solid colors or very subtle linear gradients for premium cards."
+    }
+  },
+  "layout_spacing": {
+    "grid_system": "Mobile-first layout. Standard horizontal padding: px-6.",
+    "spacing_scale": "p-1, p-2, p-4, p-6, p-8. Generous spacing philosophy. Elements must breathe.",
+    "touch_targets": "Minimum 48x48px for all interactive elements (buttons, icons, links).",
+    "surface_strategies": {
+      "cards": "Flat background, 1px solid border (#E2E8F0), no shadow default. Avoid heavy shadows. Sharp or max 8px rounded corners.",
+      "headers": "Solid background with 1px bottom border. Not transparent if content scrolls beneath.",
+      "bottom_tabs": "Fixed to bottom, solid background, high contrast active icon."
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "Solid #0052FF background, white text, no rounded-full, use rounded-md or sharp.",
+      "secondary": "Transparent background, 1px solid #E2E8F0, #0A0F1C text.",
+      "interaction": "React Native TouchableOpacity with activeOpacity={0.7} or Pressable with visual state changes."
+    },
+    "inputs": {
+      "text_input": "Height 48px min. 1px solid #E2E8F0. Focus state: border #0052FF with 2px width.",
+      "financial_input": "Must use IBM Plex Mono for digits. Right aligned or explicitly clear format for BRL (R$)."
+    },
+    "cards": {
+      "kpi_card": "Used for Dashboard. Padded (p-6). Large numeric value (text-3xl font-headings). Tiny uppercase label (text-xs).",
+      "property_card": "Image ratio 1:1 or 4:3. Full width on mobile. Price overlay or bold price text below image."
+    }
+  },
+  "specific_flows": {
+    "dashboard": "Top Hero with total revenue/contracts. Horizontal scrollable list for quick KPI metrics (Imóveis ativos, Recebimentos). Bottom quick action FAB or grid.",
+    "property_listing": "List view with thumbnail images (left) and details (right). Filter chips below the sticky header.",
+    "financial_calculator": "Clear segmented controls (IGPM vs IPCA). Input fields with clear BRL/Percentage masks. Prominent 'Calculate' CTA.",
+    "contracts_receipts": "Timeline view for contract status. One-tap 'Generate PDF/Share' actions using React Native Share API."
+  },
+  "media_and_icons": {
+    "icon_library": "phosphor-react-native or lucide-react-native. Use sharp/regular weights. No duotone for dashboards.",
+    "image_handling": "Images must not exceed 60vh on mobile. Overlay text on images MUST have gradient scrim (bg-black/40).",
+    "image_urls": {
+      "properties": [
+        {
+          "url": "https://images.unsplash.com/photo-1613490493576-7fde63acd811?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjBob3VzZSUyMGV4dGVyaW9yfGVufDB8fHx8MTc3ODc2Mzg0N3ww&ixlib=rb-4.1.0&q=85",
+          "description": "White concrete luxury house",
+          "category": "property_hero"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1706808849780-7a04fbac83ef?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBsdXh1cnklMjBob3VzZSUyMGV4dGVyaW9yfGVufDB8fHx8MTc3ODc2Mzg0N3ww&ixlib=rb-4.1.0&q=85",
+          "description": "Modern house with pool",
+          "category": "property_thumbnail"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1628012209120-d9db7abf7eab?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHw0fHxtb2Rlcm4lMjBsdXh1cnklMjBob3VzZSUyMGV4dGVyaW9yfGVufDB8fHx8MTc3ODc2Mzg0N3ww&ixlib=rb-4.1.0&q=85",
+          "description": "Modern home exterior daytime",
+          "category": "property_thumbnail"
+        }
+      ],
+      "avatars": [
+        {
+          "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMGhlYWRzaG90JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzc4NzYzODQ4fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Female professional broker",
+          "category": "user_avatar"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1685760259914-ee8d2c92d2e0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NzV8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMGhlYWRzaG90JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzc4NzYzODQ4fDA&ixlib=rb-4.1.0&q=85",
+          "description": "Professional with crossed arms",
+          "category": "user_avatar_secondary"
+        }
+      ]
+    }
+  },
+  "instructions_to_main_agent": {
+    "framework": "Use Expo React Native. Use standard React Native Core components (View, Text, ScrollView). Use standard StyleSheet or NativeWind.",
+    "files": "Remember to use .js files as per environment constraints.",
+    "testing": "All interactive and key informational elements MUST include a testID attribute (React Native equivalent of data-testid). Example: testID=\"login-submit-button\".",
+    "navigation": "Implement bottom tab navigation (Home, Properties, Clients, Finance) and stack navigation for details/forms.",
+    "ui_libraries": "Do NOT use DOM-specific Shadcn/UI directly since this is React Native. Re-create the specified design language natively respecting the tokens above.",
+    "financials": "Ensure data formatting modules account for Brazilian real currency formatting (R$) and correct IGPM/IPCA percentages."
+  }
+}
