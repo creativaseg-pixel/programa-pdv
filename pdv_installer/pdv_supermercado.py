@@ -102,9 +102,24 @@ gc.enable()
 
 
 def get_app_path():
+    """
+    Retorna a pasta de DADOS do aplicativo (banco, backups, etc).
+
+    Quando o programa é executado a partir do instalador Inno Setup, os dados
+    devem ficar em C:\\ProgramData\\PDV Supermercado\\ — pasta compartilhada
+    entre todos os usuários do Windows e gravável sem precisar de admin.
+
+    Em modo de desenvolvimento (rodando direto o .py) usa a pasta do script.
+    """
     if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
+        # Executável (PyInstaller): usa C:\ProgramData\PDV Supermercado
+        base = os.environ.get('PROGRAMDATA', 'C:\\ProgramData')
+        data_dir = os.path.join(base, 'PDV Supermercado')
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir, exist_ok=True)
+        return data_dir
     else:
+        # Desenvolvimento: pasta do .py
         return os.path.dirname(os.path.abspath(__file__))
 
 def get_db_path():
