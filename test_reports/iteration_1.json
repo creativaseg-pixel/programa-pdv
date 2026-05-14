@@ -1,0 +1,39 @@
+{
+  "summary": "Full backend + frontend testing of Sistema Imobiliária (Expo RN + FastAPI + MongoDB). 20/20 pytest backend tests pass after fixing 2 backend bugs I found (auth/register 500 due to mongo _id leaking into Pydantic response, and POST /api/properties 500 due to duplicate owner_id kwarg). All frontend flows on mobile viewport (390x844) pass: login with prefilled demo creds, dashboard KPIs, properties list+filters, clients list+filters, all 3 calculator tabs (Reajuste IGPM=4.5%/IPCA=4.62%, Multa 10%+juros 1% a.m., Comissão 6% venda / 100% locação), contract view with Lei 8.245/91 template, receipts list (REC-numbered), property creation form modal, and logout.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Already fixed by testing agent) Two backend bugs were patched in /app/backend/server.py: register endpoint now strips '_id' from response; create_property no longer passes owner_id twice. Main agent: please review the diff for regressions and consider also stripping '_id' from /api/auth/login (less risky because find_one is projected without _id only in some routes — currently login.user_resp excludes _id via dict comprehension, OK).",
+    "Optional: Document the testID 'logout-btn' (request mentioned 'logout-button' loosely — both naming styles are fine; no fix needed).",
+    "Optional: Consider applying the same defensive pattern (drop _id, no duplicate kwargs) to any future endpoints."
+  ],
+  "critical_code_review_comments": [
+    "server.py mixes Mongo doc creation with Pydantic models via spread+kwargs which is brittle (caused the create_property bug). Prefer building a single dict and validating via Property(**dict).",
+    "Receipt/Contract listing endpoints filter by user_id (good multi-tenant isolation). JWT uses 7-day expiry which is acceptable for a demo.",
+    "Frontend uses EXPO_PUBLIC_BACKEND_URL (correct Expo public env convention). All API calls go through /src/api.ts and reach /api/* — routing works through the preview ingress.",
+    "calc/multa-juros uses simple interest per day (juros_mes_pct/30) — matches market convention; verified 1000 BRL × 30 days = R$ 10 juros + R$ 100 multa = R$ 1.110."
+  ],
+  "updated_files": [
+    "/app/backend/server.py (fixed register _id leak + duplicate owner_id kwarg)",
+    "/app/backend/tests/backend_test.py (new pytest suite, 20 tests)",
+    "/app/backend/tests/__init__.py (new)"
+  ],
+  "success_rate": {"backend": "100% (20/20)", "frontend": "100% (all critical flows)"},
+  "seed_data_creation": "Used existing demo data (cd /app/backend && python seed_demo.py). No new seed data created. Test entities are prefixed TEST_ and self-cleanup via DELETE in fixtures.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend test file at /app/backend/tests/backend_test.py covers auth, calc, dashboard, seeded data, and CRUD for property/client/receipt. Run with: cd /app/backend && python -m pytest tests/backend_test.py -v --junitxml=/app/test_reports/pytest/pytest_results.xml. Frontend bottom nav uses bilingual text labels — multiple 'Imóveis'/'Clientes' matches exist on dashboard, so use page.query_selector_all and click the last match, or use specific tab routes. Logout testID is 'logout-btn' (not 'logout-button'). Demo creds: demo@imobiliaria.com / demo1234.",
+  "rca_of_issue": "Bug 1 (POST /api/auth/register 500): Mongo's insert_one mutates the inserted doc in place and adds _id (ObjectId). The handler then built user_resp filtering only 'password', leaving '_id' which fails Pydantic JSON serialization. Fix: filter both 'password' and '_id'. Bug 2 (POST /api/properties 500): PropertyCreate exposes owner_id, and the handler unpacked **data.dict() AND passed owner_id=data.owner_id explicitly → 'multiple values for keyword argument owner_id' TypeError. Fix: build a single payload dict, override owner_id once, then construct Property."
+}
